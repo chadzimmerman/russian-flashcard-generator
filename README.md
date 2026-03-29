@@ -1,4 +1,4 @@
-# Anki Russian Flashcard Generator
+# Anki Gap Finder
 
 A desktop app that analyzes a Russian source text (PDF, EPUB, TXT, or HTML), compares its vocabulary against your existing Anki deck, and automatically generates new flashcards for every word you haven't studied yet — complete with stress marks, audio pronunciation, example sentences from your own text, English translations, and grammar notes.
 
@@ -76,7 +76,7 @@ At 10 new cards per day, that adds up fast:
 
 ### macOS
 
-1. Download `AnkiGapFinder.dmg` from the [website](https://yourusername.github.io/anki-gap-finder)
+1. Download `AnkiGapFinder.dmg` from the [website](https://chadzimmerman.github.io/russian-flashcard-generator)
 2. Open the `.dmg` file
 3. Drag **Anki Gap Finder** into your Applications folder
 4. Open it from Applications or Spotlight
@@ -85,13 +85,13 @@ At 10 new cards per day, that adds up fast:
 
 ### Windows
 
-1. Download `AnkiGapFinder-Setup.exe` from the [website](https://yourusername.github.io/anki-gap-finder)
+1. Download `AnkiGapFinder-Setup.exe` from the [website](https://chadzimmerman.github.io/russian-flashcard-generator)
 2. Run the installer and follow the prompts
 3. Launch **Anki Gap Finder** from the Start menu or desktop shortcut
 
 ### Linux
 
-1. Download `AnkiGapFinder.AppImage` from the [website](https://yourusername.github.io/anki-gap-finder)
+1. Download `AnkiGapFinder.AppImage` from the [website](https://chadzimmerman.github.io/russian-flashcard-generator)
 2. Make it executable: `chmod +x AnkiGapFinder.AppImage`
 3. Run it: `./AnkiGapFinder.AppImage`
 
@@ -152,7 +152,7 @@ Click **Export**. The output file is saved next to your source file.
 | Free | $0 | Up to 10 pages per file |
 | Lifetime | $5 once | Unlimited pages, all future updates |
 
-To unlock the full version, click **Buy — $5 lifetime** in the app or on the [website](https://yourusername.github.io/anki-gap-finder). After purchase you'll receive a license key by email. Enter it under **Activate license** in the app.
+To unlock the full version, click **Buy — $5 lifetime** in the app or on the [website](https://chadzimmerman.github.io/russian-flashcard-generator). After purchase you'll receive a license key by email. Enter it under **Activate license** in the app.
 
 ---
 
