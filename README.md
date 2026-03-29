@@ -39,31 +39,29 @@ At 10 new cards per day, that adds up fast:
 
 ## What It Does
 
-1. **Extracts vocabulary from your source file** — Supports PDF, plain text (.txt/.md), EPUB, and HTML. Uses `pdfplumber` and `ebooklib` to pull all Russian text, then reduces every word to its base (dictionary) form using `pymorphy3`. This means "читал", "читала", "читаете" all resolve to "читать" before comparison.
+1. **Extracts vocabulary from your source file** — Supports PDF, plain text (.txt/.md), EPUB, and HTML. Reduces every word to its base (dictionary) form, so "читал", "читала", and "читаете" all resolve to "читать" before comparison.
 
-2. **Reads your existing Anki deck** — Directly opens your `.apkg` file (including the modern zstd-compressed `.anki21b` format used by Anki 23+), reads all card fields, and builds a set of lemmas you already know.
+2. **Reads your existing Anki deck** — Opens your `.apkg` file and builds a set of every word you already know.
 
-3. **Finds the gaps** — Set subtraction: words in your text that are not in your deck.
+3. **Finds the gaps** — Every word in your text that isn't in your deck.
 
-4. **Adds stress marks** — Uses StressRNN (offline, Zaliznyak dictionary + BiLSTM model) to predict the stressed vowel in each word. Produces носи́ть, not носить.
+4. **Adds stress marks** — Offline stress prediction using a Zaliznyak dictionary model. Produces носи́ть, not носить.
 
-5. **Pulls example sentences from your text** — For every gap word, finds the first complete sentence in your source text that contains it. Examples are always contextually relevant to what you're actually reading.
+5. **Pulls example sentences from your text** — For every gap word, finds the first complete sentence in your source that contains it. Examples are always relevant to what you're actually reading.
 
-6. **Translates via Google Translate** — Uses `deep-translator` (no API key required) to get an English definition for each word.
+6. **Translates via Google Translate** — No API key required.
 
-7. **Generates audio** — Uses Google Text-to-Speech (`gTTS`) to produce an MP3 pronunciation file for each word. Files are cached so re-runs are fast. Audio auto-plays on the front of the card in Anki.
+7. **Generates audio** — Google Text-to-Speech produces an MP3 for every word. Auto-plays on the card front in Anki.
 
-8. **Adds grammar notes** — Uses `pymorphy3` tags to produce a readable grammar summary for each word: part of speech, verb aspect (perfective/imperfective), gender, animacy, transitivity. Shown on the back of each card.
+8. **Adds grammar notes** — Part of speech, verb aspect (perfective/imperfective), gender, animacy. Shown on the back of each card.
 
-9. **Review before export** — A clean table lets you inspect every word, delete anything that looks wrong, and then export. No garbage cards.
+9. **Review before export** — A clean table lets you inspect every word and delete anything that looks wrong before generating cards.
 
-10. **Builds a ready-to-import `.apkg`** — Uses `genanki` to produce an Anki package file with all cards and audio bundled. Also exports CSV and JSON if you want to use the data elsewhere.
+10. **Exports to Anki** — Produces an `.apkg` file with all cards and audio bundled, ready to drag into Anki. Also exports CSV and JSON.
 
 ---
 
 ## Card Format
-
-Each generated card contains:
 
 | Field | Content |
 |---|---|
@@ -74,143 +72,104 @@ Each generated card contains:
 
 ---
 
-## Freemium
+## Download & Install
 
-- **Free:** process up to 10 pages per file
-- **$5 lifetime:** unlimited pages, all future updates, no subscription
+### macOS
 
-License keys are validated locally via HMAC — no internet connection required after activation.
+1. Download `AnkiGapFinder.dmg` from the [website](https://yourusername.github.io/anki-gap-finder)
+2. Open the `.dmg` file
+3. Drag **Anki Gap Finder** into your Applications folder
+4. Open it from Applications or Spotlight
+
+> **First launch:** macOS may show a security warning because the app isn't from the App Store. Go to **System Settings → Privacy & Security** and click **Open Anyway**.
+
+### Windows
+
+1. Download `AnkiGapFinder-Setup.exe` from the [website](https://yourusername.github.io/anki-gap-finder)
+2. Run the installer and follow the prompts
+3. Launch **Anki Gap Finder** from the Start menu or desktop shortcut
+
+### Linux
+
+1. Download `AnkiGapFinder.AppImage` from the [website](https://yourusername.github.io/anki-gap-finder)
+2. Make it executable: `chmod +x AnkiGapFinder.AppImage`
+3. Run it: `./AnkiGapFinder.AppImage`
 
 ---
 
-## Technical Stack
+## How to Use
 
-| Library | Purpose |
+### Step 1 — Prepare your files
+
+- **Source file:** your Russian textbook, novel, or article in PDF, EPUB, TXT, or HTML format
+- **Anki deck:** export your existing Russian deck from Anki via **File → Export → Anki Deck Package (.apkg)**
+
+### Step 2 — Run the app
+
+1. Open **Anki Gap Finder**
+2. Click **Browse** next to "Source file" and select your file
+3. Click **Browse** next to "Anki deck" and select your `.apkg` export *(optional — skip this to get all words in the text)*
+4. Choose your sort order: **Alphabetical** or **Frequency** (most common words first)
+5. Choose your output format: **apkg**, **csv**, or **json**
+6. If exporting to Anki, enter a name for your new deck
+7. Click **Find Gaps & Generate Cards**
+
+### Step 3 — Review the results
+
+When processing finishes, a table shows every gap word with its stressed form, translation, grammar notes, and example sentence.
+
+- Click a row to select it
+- Press **Delete** or **Backspace** to remove selected rows
+- **Cmd+A** (Mac) / **Ctrl+A** (Windows) to select all
+
+Remove anything that looks wrong before exporting.
+
+### Step 4 — Export
+
+Click **Export**. The output file is saved next to your source file.
+
+- **For .apkg:** drag the file into Anki to import the deck
+- **For .csv:** open in Excel, Numbers, or Google Sheets
+- **For .json:** use programmatically or import into other tools
+
+---
+
+## Supported Formats
+
+| Input | Notes |
 |---|---|
-| `customtkinter` | Desktop GUI (modern tkinter wrapper) |
-| `pdfplumber` | PDF text extraction |
-| `ebooklib` + `beautifulsoup4` | EPUB and HTML parsing |
-| `pymorphy3` | Russian morphological analysis, lemmatization, grammar tags |
-| `StressRNN` | Offline stress mark prediction (Zaliznyak + BiLSTM) |
-| `deep-translator` | Google Translate (no API key) |
-| `gTTS` | Google Text-to-Speech audio generation |
-| `genanki` | Anki `.apkg` package generation |
-| `zstandard` | Decompression of modern Anki `.anki21b` database format |
-| `sqlite3` | Reading the Anki deck database (stdlib) |
-
----
-
-## Project Structure
-
-```
-anki-python-russian-card-script/
-├── run_app.py              # GUI launcher
-├── main.py                 # CLI launcher (for scripting)
-├── app/
-│   ├── pipeline.py         # Core processing pipeline
-│   ├── extractors.py       # PDF, TXT, EPUB, HTML input parsers + Anki loader
-│   ├── exporters.py        # .apkg, CSV, JSON output writers
-│   ├── nlp.py              # Lemmatization, stress marks, grammar info
-│   ├── translate.py        # Translation and audio generation
-│   ├── licensing.py        # HMAC license key validation, freemium gate
-│   └── gui/
-│       ├── main_window.py  # Main CustomTkinter window
-│       ├── review.py       # Results table (ttk.Treeview)
-│       └── license_dialog.py  # Upgrade banner and activation dialog
-├── site/
-│   └── index.html          # GitHub Pages landing page
-└── requirements.txt
-```
-
----
-
-## Installation
-
-**Requirements:** Python 3.10+
-
-```bash
-git clone https://github.com/yourusername/anki-gap-finder.git
-cd anki-gap-finder
-pip3 install -r requirements.txt
-```
-
-> **Note:** StressRNN is not on PyPI and installs directly from GitHub. This is handled automatically by `requirements.txt`.
-
----
-
-## Usage
-
-### Desktop app
-
-```bash
-python3 run_app.py
-```
-
-1. Select your source file (PDF, TXT, EPUB, or HTML)
-2. Optionally select your existing Anki deck (.apkg) to filter out known words
-3. Choose sort order (alphabetical or by frequency in your text)
-4. Choose output format (.apkg, CSV, or JSON)
-5. Click **Find Gaps & Generate Cards**
-6. Review the results table — delete any rows you don't want
-7. Click **Export**
-8. Drag the `.apkg` into Anki to import
-
-### CLI
-
-Edit the config at the top of `main.py`, then:
-
-```bash
-python3 main.py
-```
-
----
-
-## Supported Input Formats
-
-| Format | Notes |
-|---|---|
-| PDF (`.pdf`) | Must have selectable text — scanned PDFs without OCR won't work |
+| PDF (`.pdf`) | Text must be selectable — scanned PDFs without OCR won't work |
 | Plain text (`.txt`, `.md`) | Any UTF-8 text file |
 | EPUB (`.epub`) | Project Gutenberg and other ebook sources |
 | HTML (`.html`, `.htm`) | Web pages, Project Gutenberg HTML downloads |
 
 ---
 
-## Output Formats
+## Pricing
 
-| Format | Use case |
-|---|---|
-| `.apkg` | Direct import into Anki with audio |
-| `.csv` | Review in Excel/Numbers, import into other tools |
-| `.json` | Programmatic use, custom pipelines |
+| Plan | Price | Limit |
+|---|---|---|
+| Free | $0 | Up to 10 pages per file |
+| Lifetime | $5 once | Unlimited pages, all future updates |
+
+To unlock the full version, click **Buy — $5 lifetime** in the app or on the [website](https://yourusername.github.io/anki-gap-finder). After purchase you'll receive a license key by email. Enter it under **Activate license** in the app.
 
 ---
 
-## Design Decisions
+## Tips
 
-**Why lemmatize both sides?**
-Russian is a highly inflected language — a single verb can appear in dozens of forms. Comparing raw words would miss matches like "читал" (your deck) vs "читаете" (the book). Reducing both sides to their dictionary form before comparing ensures accurate gap detection.
-
-**Why use StressRNN instead of a dictionary lookup?**
-Online sources like Wiktionary impose rate limits that break on large vocabularies (hundreds of 429 errors per run in testing). StressRNN runs fully offline using a bundled Zaliznyak dictionary and a BiLSTM model — no network required, no rate limiting, consistent speed.
-
-**Why pull example sentences from the source text?**
-Wiktionary example sentences are often literary or archaic. Pulling sentences directly from your textbook or novel means every example is in the exact vocabulary register you're trying to learn, and is more likely to be a sentence you've already encountered.
-
-**Why not use a server for licensing?**
-License keys are HMAC signatures of the buyer's email — validated locally without any network call. A small serverless webhook (Vercel free tier) generates and emails the key at purchase time. No database, no monthly costs, no server to maintain.
-
-**Why pause for review?**
-Automatic translations are imperfect, especially for words with multiple meanings. The review step catches translation errors and removes any garbage fragments before they become cards. At the quality level this tool produces, review takes 5–10 minutes for a full book run.
+- **First run is slower** — the stress model loads on startup. Subsequent runs are faster.
+- **Audio is cached** — if you re-run on the same text, existing audio files are reused instantly.
+- **Network required for translation and audio** — if your internet drops mid-run, affected words will have blank translations. You can fill these in manually in the review table before exporting.
+- **Re-run after editing your deck** — as your Anki deck grows, re-running on the same book will find fewer and fewer gaps.
 
 ---
 
 ## Limitations
 
-- **PDF quality dependent** — Scanned PDFs without OCR will produce no output. The text must be selectable.
-- **Translation quality** — Single-word translation is inherently ambiguous. Words with multiple meanings (e.g. `мир` = "world" or "peace") get one translation. The review step is the opportunity to fix these.
-- **Rate limiting** — Google Translate and gTTS are free services with no API key, so very large runs (1000+ words) may occasionally hit limits. The script includes a delay between calls to mitigate this.
-- **Stress accuracy** — StressRNN is highly accurate but not perfect, especially on rare or very short words. Incorrect stress marks are visible in the review table before export.
+- Scanned PDFs without OCR will produce no output
+- Translation is single-word and may be ambiguous for words with multiple meanings (e.g. `мир` = "world" or "peace") — use the review step to correct these
+- Stress prediction is highly accurate but not perfect on rare or very short words
 
 ---
 
