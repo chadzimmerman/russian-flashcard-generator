@@ -1,4 +1,4 @@
-# Anki Gap Finder
+# Anki Russian Flashcard Generator
 
 A desktop app that analyzes a Russian source text (PDF, EPUB, TXT, or HTML), compares its vocabulary against your existing Anki deck, and automatically generates new flashcards for every word you haven't studied yet — complete with stress marks, audio pronunciation, example sentences from your own text, English translations, and grammar notes.
 
