@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anki Gap Finder — Russian Flashcard Generator</title>
+  <meta name="description" content="Stop making flashcards by hand. Anki Gap Finder scans your Russian textbook, compares it against your existing deck, and generates ready-to-import cards with stress marks, audio, and translations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #faf9f7;
+      --surface:   #ffffff;
+      --border:    #e8e4de;
+      --accent:    #1a7a6e;   /* deep teal */
+      --accent-lt: #e8f5f3;
+      --accent-hv: #15665c;
+      --text:      #1c1c1e;
+      --muted:     #6b6b72;
+      --radius:    10px;
+    }
+
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-logo .glyph {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 0.85rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      font-size: 0.9rem;
+    }
+    .nav-links a { color: var(--muted); }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-dl {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 7px 18px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+    .nav-dl:hover { background: var(--accent-hv) !important; text-decoration: none !important; }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 64px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 18px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+    .hero-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent-hv); text-decoration: none; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--accent); text-decoration: none; }
+    .hero-note { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── Screenshot ── */
+    .screenshot-wrap {
+      max-width: 860px;
+      margin: 0 auto 72px;
+      padding: 0 24px;
+    }
+    .screenshot-wrap img {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+    }
+    .screenshot-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #f0ede8;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* ── Tagline band ── */
+    .tagline-band {
+      text-align: center;
+      padding: 48px 24px;
+      background: var(--accent-lt);
+      border-top: 1px solid #c8e8e3;
+      border-bottom: 1px solid #c8e8e3;
+    }
+    .tagline-band p {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ── Sections ── */
+    section { padding: 72px 24px; }
+    .section-inner { max-width: 860px; margin: 0 auto; }
+    h2 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+    .section-sub {
+      color: var(--muted);
+      margin-bottom: 48px;
+      max-width: 480px;
+    }
+
+    /* ── Advantages ── */
+    .advantages { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .adv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 36px;
+    }
+    .adv-item h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .adv-item h3 .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .adv-item p { font-size: 0.88rem; color: var(--muted); padding-left: 16px; }
+
+    /* ── How it works ── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 20px;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent-lt);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .step p { font-size: 0.9rem; color: var(--muted); }
+
+    /* ── Testimonial ── */
+    .testimonial-section { background: var(--accent-lt); border-top: 1px solid #c8e8e3; border-bottom: 1px solid #c8e8e3; }
+    blockquote {
+      max-width: 620px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    blockquote p {
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+    blockquote cite { font-size: 0.85rem; color: var(--muted); font-style: normal; }
+
+    /* ── Card preview ── */
+    .card-preview {
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+    .card-front {
+      padding: 36px 32px 28px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-word { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.01em; }
+    .card-audio { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+    .card-example { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 10px; }
+    .card-back { padding: 24px 32px; text-align: center; }
+    .card-translation { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+    .card-grammar { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.02em; }
+
+    /* ── Download ── */
+    .dl-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .dl-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      max-width: 720px;
+    }
+    .dl-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+    }
+    .dl-card .platform { font-size: 1.8rem; margin-bottom: 8px; }
+    .dl-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .dl-card p { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; }
+    .dl-btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 9px 22px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+    .dl-btn:hover { background: var(--accent-hv); text-decoration: none; }
+    .dl-btn.ghost {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .dl-btn.ghost:hover { background: var(--accent-lt); }
+    .dl-note { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+    /* ── Pricing ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      max-width: 560px;
+    }
+    .pricing-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      background: var(--surface);
+    }
+    .pricing-card.featured { border-color: var(--accent); }
+    .pricing-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .price { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+    .price span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+    .pricing-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; }
+    .pricing-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .pricing-list li { font-size: 0.88rem; display: flex; gap: 8px; }
+    .pricing-list li::before { content: "✓"; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+    .pricing-list li.off { color: var(--muted); }
+    .pricing-list li.off::before { content: "–"; color: var(--border); }
+    .pricing-btn {
+      display: block;
+      text-align: center;
+      padding: 10px;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .pricing-btn.primary { background: var(--accent); color: #fff; }
+    .pricing-btn.primary:hover { background: var(--accent-hv); text-decoration: none; }
+    .pricing-btn.ghost { border: 1px solid var(--border); color: var(--text); }
+    .pricing-btn.ghost:hover { border-color: var(--accent); text-decoration: none; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 36px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+    .footer-links { display: flex; gap: 20px; }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">
+    <div class="glyph">Я</div>
+    Anki Gap Finder
+  </div>
+  <div class="nav-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#download" class="nav-dl">Download</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Make Russian flashcards<br /><em>without the work.</em></h1>
+  <p>Scan any Russian textbook or novel, compare it to your Anki deck, and get a ready-to-import card set — with stress marks, audio, translations, and grammar notes.</p>
+  <div class="hero-btns">
+    <a href="#download" class="btn-primary">Download free</a>
+    <a href="#how-it-works" class="btn-ghost">See how it works</a>
+  </div>
+  <p class="hero-note">Free for up to 10 pages &nbsp;·&nbsp; $5 one-time to unlock everything</p>
+</div>
+
+<!-- Screenshot -->
+<div class="screenshot-wrap">
+  <!-- Replace with real screenshot when ready -->
+  <div class="screenshot-placeholder">Screenshot coming soon</div>
+</div>
+
+<!-- Tagline band -->
+<div class="tagline-band">
+  <p>Making one card by hand takes ~2 minutes. This tool does 800 of them in the time it takes to make a cup of tea.</p>
+</div>
+
+<!-- Advantages -->
+<section class="advantages">
+  <div class="section-inner">
+    <h2>Everything handled for you</h2>
+    <p class="section-sub">Every step that used to eat your study time is automated.</p>
+    <div class="adv-grid">
+      <div class="adv-item">
+        <h3><span class="dot"></span>Stress marks</h3>
+        <p>Offline stress prediction from a Zaliznyak dictionary model. носи́ть, not носить.</p>
+      </div>
+      <div class="adv-item">
+        <h3><span class="dot"></span>Audio pronunciation</h3>
+        <p>Google Text-to-Speech generates an MP3 for every word. Auto-plays on the card front in Anki.</p>
+      </div>
+      <div class="adv-item">
+        <h3><span class="dot"></span>Real example sentences</h3>
+        <p>Examples are pulled directly from your source text — so they're always relevant to what you're reading.</p>
+      </div>
+      <div class="adv-item">
+        <h3><span class="dot"></span>Grammar notes</h3>
+        <p>Part of speech, verb aspect, gender, animacy — shown on the back of every card, optionally.</p>
+      </div>
+      <div class="adv-item">
+        <h3><span class="dot"></span>Smart gap detection</h3>
+        <p>Lemmatizes both sides before comparing, so читал, читала, and читаете all match читать in your deck.</p>
+      </div>
+      <div class="adv-item">
+        <h3><span class="dot"></span>Frequency sorting</h3>
+        <p>Sort gaps by how often a word appears in your text — study the words that matter most first.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how-it-works">
+  <div class="section-inner">
+    <h2>How it works</h2>
+    <p class="section-sub">Four steps from textbook to flashcards.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Drop in your source file</h3>
+          <p>PDF, plain text, EPUB, or HTML. Any Russian textbook, novel, or article works.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Connect your existing Anki deck</h3>
+          <p>Export your deck as .apkg and point the app at it. Everything you already know gets filtered out.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Review the results</h3>
+          <p>A clean table shows every gap word with its stressed form, translation, grammar, and example sentence. Delete any rows you don't want.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Export and import into Anki</h3>
+          <p>Hit Export. Drag the .apkg file into Anki. Done. Cards include audio, stress marks, an example from your own text, and a translation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Card preview -->
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-inner" style="text-align: center;">
+    <h2>What the cards look like</h2>
+    <p class="section-sub" style="margin: 0 auto 40px;">Clean, minimal cards with everything you need to learn a word properly.</p>
+    <div class="card-preview">
+      <div class="card-front">
+        <div class="card-word">носи́ть</div>
+        <div class="card-audio">🔊 pronunciation auto-plays</div>
+        <div class="card-example">Она носила старое пальто каждый день зимой.</div>
+      </div>
+      <div class="card-back">
+        <div class="card-translation">to carry / to wear</div>
+        <div class="card-grammar">verb &nbsp;·&nbsp; imperfective &nbsp;·&nbsp; transitive</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonial -->
+<section class="testimonial-section">
+  <div class="section-inner">
+    <blockquote>
+      <p>"At 10 new cards per day, making them by hand costs you over 2 hours a week. That's time you could spend actually reading Russian."</p>
+      <cite>— The idea behind this tool</cite>
+    </blockquote>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing">
+  <div class="section-inner">
+    <h2>Pricing</h2>
+    <p class="section-sub">Try it free. Pay once if you want more. No subscription.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Free</h3>
+        <div class="price">$0</div>
+        <p class="pricing-desc">Try it on any file</p>
+        <ul class="pricing-list">
+          <li>Up to 10 pages per file</li>
+          <li>Stress marks &amp; audio</li>
+          <li>Translations &amp; grammar</li>
+          <li>All export formats</li>
+          <li class="off">Full books &amp; documents</li>
+        </ul>
+        <a href="#download" class="pricing-btn ghost">Download free</a>
+      </div>
+      <div class="pricing-card featured">
+        <h3>Lifetime</h3>
+        <div class="price">$5 <span>once</span></div>
+        <p class="pricing-desc">Unlock everything, forever</p>
+        <ul class="pricing-list">
+          <li>Unlimited pages</li>
+          <li>Stress marks &amp; audio</li>
+          <li>Translations &amp; grammar</li>
+          <li>All export formats</li>
+          <li>All future updates</li>
+        </ul>
+        <a href="#buy" class="pricing-btn primary">Buy — $5 lifetime</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Download -->
+<section id="download" class="dl-section">
+  <div class="section-inner">
+    <h2>Download</h2>
+    <p class="section-sub">Available for Mac, Windows, and Linux.</p>
+    <div class="dl-grid">
+      <div class="dl-card">
+        <div class="platform">🍎</div>
+        <h3>macOS</h3>
+        <p>macOS 11 or later</p>
+        <a href="#" class="dl-btn">Download .dmg</a>
+        <p class="dl-note">Coming soon</p>
+      </div>
+      <div class="dl-card">
+        <div class="platform">🪟</div>
+        <h3>Windows</h3>
+        <p>Windows 10 or later</p>
+        <a href="#" class="dl-btn ghost">Download .exe</a>
+        <p class="dl-note">Coming soon</p>
+      </div>
+      <div class="dl-card">
+        <div class="platform">🐧</div>
+        <h3>Linux</h3>
+        <p>x86_64 AppImage</p>
+        <a href="#" class="dl-btn ghost">Download .AppImage</a>
+        <p class="dl-note">Coming soon</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div>Anki Gap Finder</div>
+  <div class="footer-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="mailto:">Contact</a>
+  </div>
+  <div>Made for Russian learners.</div>
+</footer>
+
+</body>
+</html>
