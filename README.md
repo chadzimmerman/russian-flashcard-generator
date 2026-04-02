@@ -39,7 +39,7 @@ At 10 new cards per day, that adds up fast:
 
 ## What It Does
 
-1. **Extracts vocabulary from your source file** — Supports PDF, plain text (.txt/.md), EPUB, and HTML. Reduces every word to its base (dictionary) form, so "читал", "читала", and "читаете" all resolve to "читать" before comparison.
+1. **Extracts vocabulary from your source file** — Supports PDF, plain text (.txt/.md), EPUB, and HTML, or paste text directly into the app. Reduces every word to its base (dictionary) form, so "читал", "читала", and "читаете" all resolve to "читать" before comparison.
 
 2. **Reads your existing Anki deck** — Opens your `.apkg` file and builds a set of every word you already know.
 
@@ -81,19 +81,9 @@ At 10 new cards per day, that adds up fast:
 3. Drag **Anki Gap Finder** into your Applications folder
 4. Open it from Applications or Spotlight
 
-> **First launch:** macOS may show a security warning because the app isn't from the App Store. Go to **System Settings → Privacy & Security** and click **Open Anyway**.
+### Windows & Linux
 
-### Windows
-
-1. Download `AnkiGapFinder-Setup.exe` from the [website](https://chadzimmerman.github.io/russian-flashcard-generator)
-2. Run the installer and follow the prompts
-3. Launch **Anki Gap Finder** from the Start menu or desktop shortcut
-
-### Linux
-
-1. Download `AnkiGapFinder.AppImage` from the [website](https://chadzimmerman.github.io/russian-flashcard-generator)
-2. Make it executable: `chmod +x AnkiGapFinder.AppImage`
-3. Run it: `./AnkiGapFinder.AppImage`
+Coming soon.
 
 ---
 
@@ -101,7 +91,7 @@ At 10 new cards per day, that adds up fast:
 
 ### Step 1 — Prepare your files
 
-- **Source file:** your Russian textbook, novel, or article in PDF, EPUB, TXT, or HTML format
+- **Source file:** your Russian textbook, novel, or article in PDF, EPUB, TXT, or HTML format — or use the paste text tab to paste text directly
 - **Anki deck:** export your existing Russian deck from Anki via **File → Export → Anki Deck Package (.apkg)**
 
 ### Step 2 — Run the app
@@ -149,7 +139,7 @@ Click **Export**. The output file is saved next to your source file.
 
 | Plan | Price | Limit |
 |---|---|---|
-| Free | $0 | Up to 10 pages per file |
+| Free | $0 | Up to 3 pages per file |
 | Lifetime | $5 once | Unlimited pages, all future updates |
 
 To unlock the full version, click **Buy — $5 lifetime** in the app or on the [website](https://chadzimmerman.github.io/russian-flashcard-generator). After purchase you'll receive a license key by email. Enter it under **Activate license** in the app.
